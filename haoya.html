@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#F2EDE2">
+  <title>历史人物志｜你像哪位历史人物</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233F6B5C'/%3E%3Cpath d='M16 46V30h6v16zM29 46V22h6v24zM42 46V34h6v12z' fill='%23C9A45C'/%3E%3C/svg%3E">
+  <style>
+    :root{--ink:#2E3533;--muted:#8C8B7A;--primary:#3F6B5C;--accent:#C29A3E;--bg:#F2EDE2;--line:#DCD4C0;--paper:rgba(255,253,248,.94);--soft:#F6F1E4;--shadow:0 4px 20px rgba(63,107,92,.12)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;background:linear-gradient(150deg,#F2EDE2,#F6F1E7 55%,#ECE5D5);color:var(--ink);font-family:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+    button,input{font:inherit}
+    button{color:inherit}
+    h1,h2,p{margin-top:0}
+    h1,h2,.hero-title,.result-name,.section-title{font-family:"Noto Serif SC","Songti SC","SimSun",serif}
+    .shell{width:100%;max-width:680px;margin:auto;padding:20px 16px 56px}
+    .hidden{display:none!important}
+    .card,.q-header,.q-body,.top-card,.report-section{background:var(--paper);box-shadow:var(--shadow);border:1px solid rgba(63,107,92,.10)}
+    .card{border-radius:24px;padding:24px 22px;margin-bottom:18px}
+    .icon-box{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;margin:14px auto 16px;box-shadow:0 8px 28px rgba(63,107,92,.32)}
+    .hero-title{font-size:27px;font-weight:900;text-align:center;line-height:1.4;margin-bottom:7px}
+    .hero-title em{font-style:normal;color:var(--primary)}
+    .hero-sub{font-size:12px;color:#A8893F;letter-spacing:3px;font-weight:700;text-align:center;margin-bottom:22px}
+    .lead{font-size:14px;color:#625F53;line-height:1.85;text-align:center;margin-bottom:20px}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 18px}
+    .stat{background:rgba(255,253,248,.9);border-radius:18px;padding:15px 10px;text-align:center;box-shadow:0 2px 14px rgba(63,107,92,.08);color:#78766A;font-size:12px}
+    .stat b{display:block;font-size:18px;color:var(--primary);margin-bottom:3px}
+    .info-box{background:rgba(255,253,248,.8);border-left:3px solid var(--accent);border-radius:14px;padding:13px 16px;color:#5E5B4E;font-size:13px;line-height:1.75;margin-bottom:18px}
+    .eyebrow{font-size:13px;color:var(--primary);font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+    .hint{font-size:13px;color:var(--muted);line-height:1.7}
+    .btn{border:none;border-radius:16px;padding:15px 20px;cursor:pointer;font-weight:800;transition:.15s transform,.15s box-shadow,.15s background}
+    .btn:hover{transform:translateY(-2px)}
+    .btn:focus-visible,.choice:focus-visible,.nav-btn:focus-visible{outline:3px solid rgba(194,154,62,.28);outline-offset:3px}
+    .primary{width:100%;background:linear-gradient(135deg,var(--accent),var(--primary));color:#fff;box-shadow:0 8px 24px rgba(63,107,92,.32);font-size:17px;letter-spacing:1px}
+    .ghost{width:100%;background:rgba(255,253,248,.9);border:2px solid var(--line);color:#4C6B5E}
+    .intro-actions{display:grid;gap:10px}
+    .preference h2{font-size:22px;line-height:1.45;margin-bottom:8px}
+    .choices{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+    .choice{width:100%;border:2px solid #E2DBC6;border-radius:16px;background:var(--soft);padding:16px 18px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;transition:.16s all}
+    .choice:hover{border-color:var(--accent);background:rgba(194,154,62,.08);transform:translateX(3px)}
+    .choice.selected{border-color:var(--accent);background:rgba(194,154,62,.12);color:var(--primary);box-shadow:0 0 0 3px rgba(194,154,62,.12)}
+    .choice .letter{width:22px;flex:0 0 22px;color:var(--accent);font-size:18px;font-weight:900;text-align:center}
+    .answer .letter{font-size:0}
+    .answer .letter:before{content:"○";font-size:19px}
+    .answer.selected .letter:before{content:"●"}
+    .gender-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#C9A45C,#3F6B5C);font-weight:900;flex:0 0 auto}
+    .choice strong{font-size:15px;display:block}
+    .choice small{display:block;color:#8D8A79;margin-top:4px;font-size:12px;line-height:1.45}
+    .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}
+    .nav .btn{width:auto}
+    .nav .btn[disabled],.nav-btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+    .q-header{border-radius:20px;padding:16px 20px;margin-bottom:20px}
+    .q-meta{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;margin-bottom:10px}
+    .q-cat{font-size:13px;font-weight:800;color:var(--primary)}
+    .q-count{font-size:13px;color:var(--muted)}
+    .q-pct{font-size:13px;font-weight:800;color:var(--accent)}
+    .progress-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+    .progress-bar{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:99px;transition:width .38s ease}
+    .q-body{border-radius:24px;padding:28px 24px;margin-bottom:18px;min-height:520px}
+    .q-text{font-size:20px;font-weight:900;line-height:1.5;margin:10px 0 22px}
+    .q-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px}
+    .nav-btn{padding:12px 17px;border-radius:14px;border:2px solid var(--line);background:rgba(255,253,248,.9);cursor:pointer;font-size:14px;color:#746F5F}
+    .auto-hint{font-size:12px;color:#A6A08B;flex:1;text-align:center;line-height:1.4;transition:.2s}
+    .auto-hint.active{color:var(--primary);font-weight:700}
+    .result{padding:0}
+    .top-card{border-radius:28px;padding:30px 24px 26px;text-align:center;margin-bottom:18px}
+    .top-sub{font-size:15px;color:var(--accent);font-weight:700;margin-bottom:12px;letter-spacing:1px}
+    .top-icon-emoji{font-size:44px;margin-bottom:5px}
+    .match-pct{font-size:64px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.05}
+    .result-name{font-size:34px;font-weight:900;margin:10px 0 6px}
+    .person-title{font-size:15px;color:#837F6E;margin-bottom:16px;line-height:1.6}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .tag{background:rgba(63,107,92,.1);color:var(--primary);border:1px solid rgba(63,107,92,.2);border-radius:20px;padding:6px 14px;font-size:14px;font-weight:700}
+    .dominant-chip{display:inline-block;margin:12px 0 0;padding:7px 14px;border-radius:20px;background:#EFE8D3;color:var(--primary);font-size:14px;font-weight:700}
+    .match-reason{background:linear-gradient(135deg,rgba(242,237,226,.9),rgba(238,231,216,.8));border-radius:16px;padding:15px 18px;text-align:left;margin-top:16px;border:1px solid rgba(63,107,92,.12)}
+    .reason-title{font-size:15px;font-weight:800;color:var(--primary);display:block;margin-bottom:8px}
+    .quote{font-size:17px;color:#514E42;line-height:1.85;margin:0}
+    .report-section{border-radius:24px;padding:23px;margin-bottom:18px}
+    .section-title{font-size:19px;font-weight:900;margin-bottom:16px}
+    .bio{font-size:17px;line-height:1.9;color:#514E42}
+    .dimension-grid{display:flex;flex-direction:column;gap:12px}
+    .dim-row{display:grid;grid-template-columns:64px 1fr 34px;align-items:center;gap:10px;font-size:14px;color:#655F51}
+    .dim-bar{height:8px;background:#EFE9D9;border-radius:99px;overflow:hidden}
+    .dim-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:inherit}
+    .three{display:grid;grid-template-columns:1fr;gap:12px}
+    .note{background:#FCF9F1;border:1px solid #E4DCC5;border-radius:17px;padding:18px 17px;line-height:1.8;color:#625C4B;font-size:16px}
+    .note b{display:block;color:var(--ink);margin-bottom:7px;font-size:17px}
+    .share-actions{display:grid;gap:10px;margin:22px 0}
+    .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);width:max-content;max-width:min(520px,calc(100% - 32px));background:#2E3533;color:#fff;padding:11px 18px;border-radius:18px;text-align:center;line-height:1.6;opacity:0;pointer-events:none;transition:.25s;z-index:30}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .micro{font-size:13px;color:#8D8A79;text-align:center;line-height:1.65}
+    .save-modal{position:fixed;z-index:80;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:18px;background:rgba(46,53,51,.5);overflow:auto}
+    .save-panel{width:min(680px,100%);margin:auto;background:#fff;border-radius:24px;padding:16px;box-shadow:0 24px 70px rgba(46,53,51,.3)}
+    .save-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .save-panel-head h2{margin:0;font-size:20px}
+    .save-close{width:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:#EFE8D3;font-size:24px;cursor:pointer}
+    .save-tip{margin:0 2px 14px;color:#625C4B;font-size:14px;line-height:1.7}
+    .save-preview{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:16px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+    body.locked{overflow:hidden}
+    .app-locked{display:none}
+    .access-gate{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#F2EDE2,#F6F1E7)}
+    .access-card{width:min(460px,100%);background:rgba(255,253,248,.95);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:var(--shadow)}
+    .lock-mark{width:72px;height:72px;border-radius:20px;margin:0 auto 18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--primary));color:#fff;font-size:32px;box-shadow:0 8px 28px rgba(63,107,92,.32)}
+    .access-card h1{font-size:25px;margin-bottom:8px}
+    .access-card p{color:var(--muted);font-size:13px;line-height:1.7}
+    .access-input{display:block;width:100%;margin:20px auto 14px;padding:14px;border:2px solid var(--line);border-radius:14px;background:#fff;text-align:center;font-size:28px;font-weight:800;letter-spacing:12px;color:var(--primary);outline:0}
+    .access-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(194,154,62,.18)}
+    .access-error{min-height:22px;margin:10px 0 0!important;color:#C0392B!important;font-size:13px;opacity:0}
+    .access-error.show{opacity:1}
+    .access-notice{margin:16px auto 0;color:#A6A08B;font-size:12px;line-height:1.6;max-width:380px;text-align:center}
+    .access-notice strong{color:#C0392B}
+    @media(min-width:640px){.three{grid-template-columns:repeat(3,1fr)}.share-actions{grid-template-columns:1fr 1fr}.intro-actions{grid-template-columns:1fr 1fr}}
+    @media(max-width:480px){.shell{padding:12px 12px 40px}.card,.q-body{padding:22px 17px}.q-body{min-height:560px}.q-header{padding:15px 16px}.q-meta{gap:7px}.q-text{font-size:19px}.choice{padding:15px 13px}.nav-btn{padding:11px 12px}.auto-hint{font-size:11px}.report-section{padding:23px 18px}.result-name{font-size:32px}.quote,.bio{font-size:17px}.dim-row{grid-template-columns:60px 1fr 32px;font-size:14px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body class="locked">
+  <section class="access-gate" id="accessGate">
+    <div class="access-card">
+      <div class="lock-mark">🔐</div>
+      <div class="hero-sub">HISTORY ATLAS · PRIVATE ARCHIVE</div>
+      <h1>访问验证</h1>
+      <p>这是一份有权限的历史人物测试，请输入四位访问码解锁。</p>
+      <input class="access-input" id="accessInput" type="tel" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="••••" aria-label="四位访问码">
+      <button class="btn primary" id="unlockBtn">立即解锁</button>
+      <p class="access-error" id="accessError" aria-live="polite">访问码错误，请重新输入</p>
+      <p class="access-notice">认准原创作者马五斤，若买到盗版，请直接联系对应商家申请退款。</p>
+    </div>
+  </section>
+  <main class="shell app-locked" id="appShell">
+    <!-- ===== 首页 ===== -->
+    <section class="card intro" id="intro">
+      <div class="icon-box">🏛️</div>
+      <h1 class="hero-title">你像历史上哪一位<em>人物</em>？</h1>
+      <div class="hero-sub">HISTORY ATLAS · ANCIENT ARCHIVE</div>
+      <p class="lead">通过24道情境选择，读取你的决断、洞察、表达与担当。系统将从中国古代历史人物中，为你找出最相似的那一位。</p>
+      <div class="stats">
+        <span class="stat"><b>历代群像</b>风云人物库</span>
+        <span class="stat"><b>男女皆有</b>多元角色</span>
+        <span class="stat"><b>八维分析</b>性格建模</span>
+        <span class="stat"><b>二十四问</b>即时出档案</span>
+      </div>
+      <div class="info-box"><b>测试说明</b><br>没有标准答案，请选择最接近真实自己的反应。答案会直接参与人物能力向量计算。</div>
+      <div class="intro-actions"><button class="btn primary" id="startBtn">开始读取档案</button></div>
+    </section>
+
+    <!-- ===== 性别偏好 ===== -->
+    <section class="card preference hidden" id="preference">
+      <div class="icon-box">🧭</div>
+      <div class="hero-sub">第一步 · 档案映射偏好</div>
+      <h2>选择你更有代入感的人物方向</h2>
+      <p class="hint">这只影响最终人物候选范围，不影响答题内容与分数计算。</p>
+      <div class="choices">
+        <button class="choice gender" data-gender="female"><span class="gender-mark">女</span><span><strong>女性人物优先</strong><small>从女性历史人物中寻找最相似的你</small></span></button>
+        <button class="choice gender" data-gender="male"><span class="gender-mark">男</span><span><strong>男性人物优先</strong><small>从男性历史人物中寻找最相似的你</small></span></button>
+        <button class="choice gender" data-gender="all"><span class="gender-mark">皆</span><span><strong>不限性别</strong><small>开放完整人物档案库，纯粹按性格匹配</small></span></button>
+      </div>
+      <div class="nav"><button class="btn ghost" id="prefBack">返回</button><button class="btn primary" id="prefNext" disabled>进入情境测试</button></div>
+    </section>
+
+    <!-- ===== 答题进度 ===== -->
+    <section class="q-header hidden" id="quizChrome">
+      <div class="q-meta">
+        <span class="q-cat" id="stageLabel">⚖️ 决策方式</span>
+        <span class="q-count" id="progressText">1 / 24</span>
+        <span class="q-pct" id="progressPct">4%</span>
+      </div>
+      <div class="progress-track"><i class="progress-bar" id="progressBar"></i></div>
+    </section>
+
+    <!-- ===== 题目 ===== -->
+    <section class="q-body hidden" id="question">
+      <div class="eyebrow" id="chapterName">⚖️ 决策方式</div>
+      <h2 class="q-text" id="questionText"></h2>
+      <div class="choices" id="answerList"></div>
+      <div class="q-nav">
+        <button class="nav-btn" id="prevBtn">上一题</button>
+        <div class="auto-hint" id="autoHint">选择后自动进入下一题</div>
+        <button class="nav-btn" id="nextBtn" disabled>下一题</button>
+      </div>
+    </section>
+
+    <!-- ===== 结果 ===== -->
+    <section class="result hidden" id="result">
+      <div class="top-card" id="reportHead">
+        <div class="top-sub">你的历史人物匹配结果</div>
+        <div class="top-icon-emoji">🏛️</div>
+        <div class="match-pct" id="matchRate"></div>
+        <h1 class="result-name" id="resultName"></h1>
+        <div class="person-title" id="resultTitle"></div>
+        <div class="tags" id="resultTags"></div>
+        <div class="dominant-chip" id="dominant"></div>
+        <div class="match-reason"><span class="reason-title">人物心声</span><p class="quote" id="resultQuote"></p></div>
+      </div>
+      <section class="report-section">
+        <div class="section-title">01 · 人物自画像</div><div class="bio" id="portrait"></div>
+      </section>
+      <section class="report-section">
+        <div class="section-title">02 · 八维能力结构</div><div class="dimension-grid" id="dimensionGrid"></div>
+      </section>
+      <section class="report-section">
+        <div class="section-title">03 · 你与 TA 的共同底色</div>
+        <div class="three" id="commonGround"></div>
+      </section>
+      <section class="report-section">
+        <div class="section-title">04 · 现实中的你</div><div class="note"><b>现实互动方式</b><span id="reality"></span></div>
+      </section>
+      <section class="report-section">
+        <div class="section-title">05 · 性格盲点与风险提醒</div>
+        <div class="three"><div class="note"><b>可能的盲点</b><span id="blindspot"></span></div><div class="note"><b>风险提醒</b><span id="risk"></span></div><div class="note"><b>给你的建议</b><span id="advice"></span></div></div>
+      </section>
+      <section class="report-section">
+        <div class="section-title">06 · 你的三句人物台词</div><div class="three" id="lines"></div>
+      </section>
+      <div class="share-actions"><button class="btn primary" id="exportBtn">下载完整结果图</button><button class="btn ghost" id="restartBtn">重新测试</button></div>
+      <p class="micro">本测试用于趣味性自我探索，不构成心理测评或历史评价。</p>
+    </section>
+  </main>
+  <div class="save-modal hidden" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+    <div class="save-panel">
+      <div class="save-panel-head"><h2 id="saveModalTitle">长按保存到手机相册</h2><button class="save-close" id="saveModalClose" type="button" aria-label="关闭">×</button></div>
+      <p class="save-tip">当前浏览器不支持直接调起系统相册。请长按下方完整结果图，选择“存储到照片/保存到相册”；不会跳转到新的浏览器页面。</p>
+      <img class="save-preview" id="savePreview" alt="历史人物测试完整结果图">
+    </div>
+  </div>
+  <div class="toast" id="toast">已记录</div>
+
+  <script>
+  (() => {
+    const ACCESS_CODE="9898";
+    const DIMS=["决断","共情","开创","洞察","表达","经营","独立","担当"];
+
+    const ARCH={
+      ruler:{label:"定局者",tags:["格局","决断","秩序"],vec:[95,55,70,72,62,84,58,91],portrait:"你习惯先看全局，再决定局部如何落子。面对混乱，你的本能不是逃开，而是建立次序、分清轻重，并为最终结果负责。",blind:"容易把效率置于感受之前，让身边人误以为你只关心结果。",reality:"在团队里，你常常自然成为那个拍板、兜底、整合资源的人。",advice:"保留决断力，也给不同声音一点抵达核心的时间。"},
+      strategist:{label:"谋略家",tags:["洞察","布局","克制"],vec:[76,48,66,98,55,72,78,67],portrait:"你很少被表面热闹牵着走。你善于从碎片里识别规律，把眼前得失放进更长的时间轴，然后选择最有杠杆的一步。",blind:"思考过深时，可能错过需要快速行动的窗口。",reality:"你通常是局面中的观察者和设计者，擅长提前准备第二方案。",advice:"好谋略需要落地；当信息已足够，就允许自己果断下注。"},
+      pioneer:{label:"开路者",tags:["冒险","行动","边界"],vec:[82,50,99,62,60,55,86,78],portrait:"你对未知有天然的好奇。与其沿着成熟路线重复，你更愿意承担试错成本，亲手把不存在的路走成可抵达的地图。",blind:"容易被新鲜目标吸引，低估长期维护与收尾的价值。",reality:"面对新项目，你往往是第一个说“可以试试”的人。",advice:"每次开路前，先为持续投入和退出条件各留一条线。"},
+      diplomat:{label:"连接者",tags:["共情","协调","关系"],vec:[58,98,62,78,82,74,48,66],portrait:"你能听见言语背后的需求，也懂得在立场之间寻找可被共同接受的第三条路。你相信连接本身就是一种力量。",blind:"过于照顾关系时，可能把自己的真实边界放到最后。",reality:"你擅长缓和冲突、翻译分歧，让不同的人愿意坐在同一张桌前。",advice:"好的和解不靠自我牺牲；清晰说出自己的条件。"},
+      scholar:{label:"求真者",tags:["求知","理性","专注"],vec:[56,60,68,96,70,58,88,62],portrait:"你尊重证据、逻辑和长期积累。比起马上被看见，你更愿意把一件事研究透彻，让结论经得住时间和反复推敲。",blind:"可能因标准过高而推迟表达，也可能显得不够热络。",reality:"你是复杂问题里的深潜者，擅长把混乱知识整理成清晰框架。",advice:"不要等到百分之百确定；阶段性的公开，也能帮助知识继续生长。"},
+      reformer:{label:"破局者",tags:["改革","勇气","原则"],vec:[88,66,94,80,82,68,91,86],portrait:"你对“不合理但大家已习惯”的事尤其敏感。只要确认方向正确，你愿意承受质疑，推动规则、观念或系统发生真正变化。",blind:"推进过快时，容易低估旧结构的惯性和他人的安全感。",reality:"你不喜欢用“向来如此”解释问题，会主动寻找更好的做法。",advice:"改变不仅需要锋芒，也需要节奏、同盟和可复制的路径。"},
+      artist:{label:"表达者",tags:["审美","感受","创造"],vec:[48,88,82,79,99,46,93,55],portrait:"你对情绪、语言与美有敏锐触觉。你能把难以言明的经验转化为作品、叙事或气氛，让别人从中看见自己。",blind:"感受过载时，容易把现实责任视作对自由的压迫。",reality:"你靠表达整理世界，也常以独特审美为普通生活重新命名。",advice:"为灵感建立稳定容器，规律和自由并不相互排斥。"},
+      guardian:{label:"守护者",tags:["担当","忠诚","坚韧"],vec:[78,82,55,68,54,76,60,99],portrait:"你把承诺看得很重。越是艰难的局面，你越倾向于站稳、照顾整体，并用可靠的行动保护自己认定的人和价值。",blind:"习惯坚强会让你忘记求助，也会把不属于你的责任背在身上。",reality:"别人遇到真正的难题时，往往第一个想到你。",advice:"担当不是无限透支；让值得信任的人也有机会支持你。"},
+      merchant:{label:"经营者",tags:["务实","资源","长线"],vec:[72,65,74,78,73,99,64,71],portrait:"你善于让资源流动起来，既看见价值，也看见实现价值的路径。你重视信用、效率与可持续，而非一时的漂亮数字。",blind:"过于计算投入产出时，可能忽略无法量化的情感价值。",reality:"你擅长把想法变成项目，把零散人脉和资源组织成可运行的系统。",advice:"继续算清大账，同时给少数重要的人与事保留“不计回报”。"},
+      free:{label:"自守者",tags:["自由","清醒","边界"],vec:[52,72,62,84,77,43,99,58],portrait:"你重视精神自由与个人节奏，不愿为了不值得的评价消耗自己。你清醒地知道什么属于自己，也敢于离开失真的秩序。",blind:"过早抽身可能让机会、影响力和深层连接一起变小。",reality:"你有自己的价值坐标，不容易被集体情绪裹挟。",advice:"守住边界，但别把所有复杂协作都理解为对自由的冒犯。"}
+    };
+
+    const P=(name,gender,era,role,arch,quote)=>({name,gender,era,role,arch,quote});
+    const people=[
+      P("秦始皇","male","秦","一统型帝王","ruler","天下大势，要从分散走向一体。"),P("汉武帝","male","西汉","拓疆型帝王","ruler","边界不是天生的，是由意志重新丈量的。"),
+      P("李世民","male","唐","纳谏型帝王","ruler","以人为镜，才看得见得失。"),P("诸葛亮","male","三国","长期主义谋臣","strategist","真正的谋划，是把责任坚持到最后。"),
+      P("张良","male","西汉","克制型谋士","strategist","最高明的一步，常在喧嚣之外。"),P("王阳明","male","明","心学家","scholar","知行本是一件事。"),
+      P("司马迁","male","西汉","史学家","scholar","把真实写下来，时间自会作证。"),P("商鞅","male","战国","制度改革家","reformer","真正的改变，要落进可以执行的制度。"),
+      P("王安石","male","北宋","改革家","reformer","不畏浮云，才能看见更远的方向。"),P("张骞","male","西汉","开路型使者","pioneer","路不是等来的，是一步一步走出来的。"),
+      P("郑和","male","明","航海家","pioneer","海的尽头不是边界，而是新的相逢。"),P("李白","male","唐","浪漫主义诗人","artist","天生我材必有用。"),
+      P("苏轼","male","北宋","旷达型文豪","artist","人生如逆旅，我亦是行人。"),P("岳飞","male","南宋","忠勇型将领","guardian","认定的山河，要用一生守护。"),
+      P("管仲","male","春秋","政治家与改革家","merchant","善用资源，才能让秩序真正长久。"),P("陶渊明","male","东晋","自守型诗人","free","不为五斗米折腰。"),
+      P("晏婴","male","春秋","外交家","diplomat","言语不必高声，也能守住立场。"),P("范蠡","male","春秋","经商与治国","merchant","进退之间，也要看得清时势与价值。"),
+
+      P("武则天","female","唐","开创型女帝","ruler","位置从不定义我，我来定义位置。"),P("吕后","female","西汉","权谋型政治家","ruler","能在风暴中站稳，才有资格重排局面。"),
+      P("上官婉儿","female","唐","宫廷政治家","strategist","文字可以是门，也可以是路。"),P("班昭","female","东汉","史学家","scholar","记录与学习，让后来者不必从零开始。"),
+      P("李清照","female","宋","婉约词人","artist","细微的感受，也值得被认真写下。"),P("蔡文姬","female","汉末","文学家","artist","离乱夺不走一个人对故土的记忆。"),
+      P("花木兰","female","南北朝传说","代父从军者","guardian","身份不是界限，选择才是。"),P("梁红玉","female","南宋","抗金女将","guardian","鼓声一起，退路便不在心中。"),
+      P("文成公主","female","唐","文化使者","diplomat","真正的连接，会把陌生变成共同生活。"),P("黄道婆","female","元","纺织技术革新者","pioneer","真正的技术，要让普通人的日子变好。"),
+      P("冯太后","female","北魏","改革型政治家","reformer","改变旧制，需要耐心，也需要真正的执行力。"),P("缇萦","female","西汉","上书救父者","reformer","一封勇敢的上书，也能推动制度改变。"),
+      P("班婕妤","female","西汉","文学家","artist","清醒地退一步，也能守住尊严与才情。"),P("太姒","female","西周","周室奠基者之一","guardian","温厚不是退让，而是让家国根基更稳。"),
+      P("卓文君","female","西汉","诗人与经营者","free","自己的生活，要由自己选择。")
+    ];
+
+    const BASE_Q=[
+      ["⚖️ 决策方式","面对一个信息不完整的机会，你通常会？",[["继续观察，补齐关键证据","洞察"],["设好底线后尽快决定","决断"],["询问相关人的真实感受","共情"],["用小成本先试一次","开创"]]],
+      ["⚖️ 决策方式","重要计划突然被打乱时，你的第一反应是？",[["把意外当成新机会","开创"],["观察变化后重新判断","洞察"],["迅速重排优先级","决断"],["先安顿好身边人的情绪","共情"]]],
+      ["⚖️ 决策方式","团队争论很久仍没有结论，你更可能？",[["翻译分歧，寻找共同点","共情"],["提出大家没想过的第三条路","开创"],["判断真正卡住局面的因素","洞察"],["明确拍板并承担结果","决断"]]],
+      ["⚖️ 决策方式","高回报与高风险同时出现时，你更倾向？",[["愿意为新的可能性冒险","开创"],["继续收集证据，降低未知","洞察"],["设置止损后果断下注","决断"],["评估它会给相关人带来什么","共情"]]],
+      ["🤝 人际协作","一段重要合作出现裂痕，你首先会？",[["把问题清楚地说出来","表达"],["算清双方还能交换什么价值","经营"],["守住自己的原则和边界","独立"],["主动承担自己该负责的部分","担当"]]],
+      ["🤝 人际协作","团队士气低落时，你更可能？",[["接下最困难的任务稳住大家","担当"],["讲清目标，让大家重新相信","表达"],["调整资源，让努力尽快有回报","经营"],["保持自己的节奏，不被情绪带走","独立"]]],
+      ["🤝 人际协作","别人强烈反对你的选择时，你会？",[["重新评估现实成本与收益","经营"],["按自己的价值判断继续走","独立"],["承担后果，不让别人替你买单","担当"],["把理由解释到足够清楚","表达"]]],
+      ["🤝 人际协作","你更希望别人怎样评价你？",[["活得清醒，始终像自己","独立"],["关键时刻真正靠得住","担当"],["能把复杂事情讲明白","表达"],["做事有章法，懂得长期经营","经营"]]],
+      ["🚀 行动与变化","遇到没有先例的新项目，你更倾向？",[["先做一个最小版本试水","开创"],["研究相似案例和失败原因","洞察"],["定目标和截止时间直接推进","决断"],["先听团队最真实的顾虑","共情"]]],
+      ["🚀 行动与变化","发现一条大家习惯了却不合理的规则，你会？",[["确认它为何形成以及谁会受影响","洞察"],["站出来推动它尽快改变","决断"],["先联合理解这件事的人","共情"],["设计一套完全不同的新规则","开创"]]],
+      ["🚀 行动与变化","一件事做了很久仍没有起色，你会？",[["设定最后期限，决定继续或停止","决断"],["确认伙伴是否还愿意同行","共情"],["换一种完全不同的方法","开创"],["重新检查最初的假设","洞察"]]],
+      ["🚀 行动与变化","遇到实力很强的对手，你更习惯？",[["寻找新的赛道和规则","开创"],["分析对方真正的优势与软肋","洞察"],["抢占节奏，正面应战","决断"],["寻找双方都在意的底线","共情"]]],
+      ["🧠 思考与表达","面对复杂信息，你最信任什么？",[["能被实际结果持续验证的方法","经营"],["能被清楚说出的逻辑","表达"],["自己独立思考后的判断","独立"],["经得住责任考验的选择","担当"]]],
+      ["🧠 思考与表达","别人误解你时，你通常会？",[["不急着证明，继续做自己的事","独立"],["确保误解不会伤及他人","担当"],["当场解释到彼此听懂","表达"],["判断解释是否值得投入","经营"]]],
+      ["🧠 思考与表达","准备一份重要提案时，你最看重？",[["它能否真正落地并持续运转","经营"],["它是否保留我的独特立场","独立"],["我是否愿意为结果负责","担当"],["它能否让陌生人听懂并相信","表达"]]],
+      ["🧠 思考与表达","如果只能保留一种能力，你会选？",[["准确表达思想和感受","表达"],["把资源组织成长期价值","经营"],["不被外界轻易改变方向","独立"],["在关键时刻站出来承担","担当"]]],
+      ["🏛️ 资源与责任","突然得到一笔可自由使用的资源，你会？",[["确定最重要的目标，集中投入","决断"],["先解决身边人最紧迫的需要","共情"],["支持一个高潜力的新尝试","开创"],["先研究怎样配置最合理","洞察"]]],
+      ["🏛️ 资源与责任","资源只够保住一件事，你优先保住？",[["最有价值的信息与判断","洞察"],["最关键、最能影响全局的结果","决断"],["最需要被照顾的人","共情"],["最可能打开未来的尝试","开创"]]],
+      ["🏛️ 资源与责任","你被临时推到台前主持大局，会先做什么？",[["听一圈意见，确认真实诉求","共情"],["用新形式快速打开局面","开创"],["梳理关键矛盾和先后手","洞察"],["明确主线并马上分工","决断"]]],
+      ["🏛️ 资源与责任","计划进行到一半，发现方向可能错了，你会？",[["果断调整，哪怕推倒重来","决断"],["先问问团队的真实想法","共情"],["立即试验新的可能性","开创"],["重新核对最初的信息假设","洞察"]]],
+      ["🌙 价值与人生","什么最能让你长期坚持一件事？",[["让更多人理解它的意义","表达"],["它能不断产生实际价值","经营"],["它符合我真正相信的东西","独立"],["有人和结果需要我负责","担当"]]],
+      ["🌙 价值与人生","你理想中的成就更接近？",[["完成一件对很多人重要的事","担当"],["让一种思想被更多人看见","表达"],["建立一个能持续运行的系统","经营"],["拥有选择自己生活的自由","独立"]]],
+      ["🌙 价值与人生","千年之后，你希望人们记得你什么？",[["我始终忠于自己的方向","独立"],["我守住了重要的人和事","担当"],["我留下了能影响别人的表达","表达"],["我建立了可以继续生长的价值","经营"]]],
+      ["🌙 价值与人生","你最不能接受哪种状态？",[["长期投入却没有真实价值","经营"],["为了合群而背离自己","独立"],["关键时刻没有人负责","担当"],["有想法却无法表达出来","表达"]]]
+    ];
+
+    const Q=BASE_Q.slice();
+    const state={gender:null,index:0,answers:[],advanceTimer:null,result:null};
+    const $=s=>document.querySelector(s);
+    const intro=$("#intro"),pref=$("#preference"),question=$("#question"),result=$("#result"),chrome=$("#quizChrome");
+
+    function unlock(){
+      const input=$("#accessInput"),error=$("#accessError");
+      if(input.value.trim()!==ACCESS_CODE){
+        error.classList.add("show");input.value="";input.focus();return;
+      }
+      $("#accessGate").classList.add("hidden");$("#appShell").classList.remove("app-locked");document.body.classList.remove("locked");
+      error.classList.remove("show");window.scrollTo(0,0);
+    }
+    $("#unlockBtn").onclick=unlock;
+    $("#accessInput").addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+    const accessParam=new URLSearchParams(location.search).get("code");
+    if(accessParam){$("#accessInput").value=accessParam;setTimeout(unlock,120)}
+
+    const show=el=>{[intro,pref,question,result].forEach(x=>x.classList.add("hidden"));el.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})};
+    function setChrome(on){chrome.classList.toggle("hidden",!on)}
+    function announce(message,duration=1800){const toast=$("#toast");toast.textContent=message;toast.classList.add("show");clearTimeout(toast._timer);toast._timer=setTimeout(()=>toast.classList.remove("show"),duration)}
+
+    $("#startBtn").onclick=()=>{show(pref);setChrome(false)};
+    $("#prefBack").onclick=()=>{show(intro);setChrome(false)};
+    document.querySelectorAll(".gender").forEach(btn=>btn.onclick=()=>{
+      document.querySelectorAll(".gender").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");state.gender=btn.dataset.gender;$("#prefNext").disabled=false;
+    });
+    $("#prefNext").onclick=()=>{state.index=0;state.answers=Array(Q.length).fill(null);setChrome(true);show(question);renderQuestion()};
+    $("#prevBtn").onclick=()=>{if(state.index===0){show(pref);setChrome(false)}else{state.index--;renderQuestion()}};
+
+    function advanceQuestion(){
+      clearTimeout(state.advanceTimer);
+      if(state.answers[state.index]===null)return;
+      if(state.index<Q.length-1){state.index++;renderQuestion();requestAnimationFrame(()=>question.scrollIntoView({behavior:"smooth",block:"start"}))}
+      else finish();
+    }
+    $("#nextBtn").onclick=advanceQuestion;
+    function updateChrome(i){
+      const n=Math.max(1,i+1),total=Q.length,pct=Math.round(n/total*100);
+      $("#progressText").textContent=`${n} / ${total}`;$("#progressBar").style.width=`${pct}%`;$("#progressPct").textContent=`${pct}%`;
+      $("#stageLabel").textContent=Q[i][0];
+    }
+    function renderQuestion(){
+      const i=state.index,[cat,text,opts]=Q[i];updateChrome(i);$("#chapterName").textContent=cat;$("#questionText").textContent=text;
+      $("#answerList").innerHTML=opts.map((o,j)=>`<button class="choice answer ${state.answers[i]===j?"selected":""}" data-i="${j}"><span class="letter">${"ABCD"[j]}</span><span><strong>${o[0]}</strong><small>更接近「${o[1]}」的行为倾向</small></span></button>`).join("");
+      $("#autoHint").textContent=state.answers[i]===null?"选择后自动进入下一题":"本题已选择，可重新选择";$("#autoHint").classList.toggle("active",state.answers[i]!==null);
+      document.querySelectorAll(".answer").forEach(btn=>btn.onclick=()=>{
+        state.answers[i]=+btn.dataset.i;document.querySelectorAll(".answer").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");$("#nextBtn").disabled=false;
+        $("#autoHint").textContent=i===Q.length-1?"已选择，正在生成人物档案…":"已选择，正在进入下一题…";$("#autoHint").classList.add("active");
+        clearTimeout(state.advanceTimer);state.advanceTimer=setTimeout(advanceQuestion,420);
+      });
+      $("#nextBtn").disabled=state.answers[i]===null;$("#nextBtn").textContent=i===Q.length-1?"生成档案":"下一题";
+    }
+    function finish(){
+      const raw=Object.fromEntries(DIMS.map(d=>[d,12]));
+      state.answers.forEach((a,i)=>{const dim=Q[i][2][a][1];raw[dim]+=9});
+      const max=Math.max(...Object.values(raw)),min=Math.min(...Object.values(raw));
+      const scores=DIMS.map(d=>Math.round(38+(raw[d]-min)/(max-min||1)*60));
+      const pool=people.filter(p=>(state.gender==="all"||p.gender===state.gender)&&ARCH[p.arch]);
+      const distance=p=>{const v=ARCH[p.arch].vec;return Math.sqrt(v.reduce((sum,x,i)=>sum+(x-scores[i])**2,0))};
+      const ranked=pool.map(p=>({p,d:distance(p)})).sort((a,b)=>a.d-b.d);
+      const person=ranked[0].p,a=ARCH[person.arch];
+      const similarity=Math.max(76,Math.min(97,Math.round(100-ranked[0].d/4.8)));
+      $("#resultName").textContent=person.name;$("#resultTitle").textContent=`${person.era} · ${person.role} · ${a.label}`;
+      $("#resultQuote").textContent=`“${person.quote}”`;$("#matchRate").textContent=similarity+"%";
+      $("#dominant").textContent=`主导维度：${DIMS[scores.indexOf(Math.max(...scores))]}`;
+      $("#resultTags").innerHTML=a.tags.map(t=>`<span class="tag">${t}</span>`).join("");
+      $("#portrait").textContent=`你与${person.name}相似的，并不是具体经历，而是处理世界的方式。${a.portrait}`;
+      $("#dimensionGrid").innerHTML=DIMS.map((d,i)=>`<div class="dim-row"><span>${d}</span><span class="dim-bar"><i style="width:${scores[i]}%"></i></span><b>${scores[i]}</b></div>`).join("");
+      const top=DIMS.map((d,i)=>[d,scores[i]]).sort((x,y)=>y[1]-x[1]).slice(0,3);
+      state.result={person,a,scores,similarity,top};
+      $("#commonGround").innerHTML=top.map(([d,s],i)=>`<div class="note"><b>${["第一底色","隐藏天赋","长期优势"][i]} · ${d}</b>${commonText(d,person.name)}</div>`).join("");
+      $("#blindspot").textContent=a.blind;$("#reality").textContent=a.reality;$("#advice").textContent=a.advice;
+      $("#risk").textContent=`当「${a.tags[0]}」被过度使用时，你可能会把它变成唯一答案。尤其在压力状态下，记得检查自己是否忽略了关系、节奏或新的证据。`;
+      $("#lines").innerHTML=makeLines(a,person).map(x=>`<div class="note">“${x}”</div>`).join("");
+      setChrome(false);show(result);
+    }
+    function commonText(d,name){
+      const map={决断:"在需要做决定时，你倾向于收束噪音、抓住主线。",共情:"你能感知他人的处境，并把关系当成局面的一部分。",开创:"旧答案无法解决问题时，你敢于另起一行。",洞察:"你相信真正的答案藏在表象背后的规律里。",表达:"你擅长让模糊的感受与想法获得清晰形状。",经营:"你能看见资源的组合方式与长期价值。",独立:"你有一套不轻易被外界带走的内在坐标。",担当:"越到关键时刻，你越愿意站出来承担。"};
+      return `${map[d]}这也是你与${name}最接近的一层性格底色。`;
+    }
+    function makeLines(a,p){
+      const lines={ruler:["先把局面稳住，再谈漂亮。","位置越高，越要对结果负责。","真正的秩序，能让众人各得其所。"],strategist:["别只看眼前这一手。","信息不全时，克制也是行动。","真正的胜负，在动手前已有轮廓。"],pioneer:["没有路，就先走出第一步。","试错不是浪费，是地图的成本。","边界之外，才有新的答案。"],diplomat:["先听懂，再说服。","关系不是妥协，是通往结果的桥。","让不同的人看见共同的方向。"],scholar:["先求证，再下结论。","真正的知识，经得起反复追问。","慢一点没关系，但要更接近真实。"],reformer:["向来如此，不代表理应如此。","改变要有锋芒，也要有路径。","如果没人先走，那就从我开始。"],artist:["我把说不清的感受，变成能被看见的东西。","生活不是材料，生活本身就是作品。","敏感不是脆弱，是另一种看见。"],guardian:["你们先走，我来守最后一段。","答应过的事，就要有回音。","真正的强大，是让身边的人安心。"],merchant:["信用是最贵的本钱。","会算账，也要会看长远。","让价值流动起来，才算真正拥有。"],free:["我不逃离世界，我只是选择自己的位置。","热闹不等于值得。","守住自己，才有余力理解别人。"]};
+      return [p.quote,...lines[p.arch]].slice(0,3);
+    }
+    function roundedRectPath(c,x,y,w,h,r){
+      const radius=Math.max(0,Math.min(Number(r)||0,Math.abs(w)/2,Math.abs(h)/2));
+      c.beginPath();
+      if(typeof c.roundRect==="function"){c.roundRect(x,y,w,h,radius);return}
+      c.moveTo(x+radius,y);c.lineTo(x+w-radius,y);c.quadraticCurveTo(x+w,y,x+w,y+radius);
+      c.lineTo(x+w,y+h-radius);c.quadraticCurveTo(x+w,y+h,x+w-radius,y+h);
+      c.lineTo(x+radius,y+h);c.quadraticCurveTo(x,y+h,x,y+h-radius);
+      c.lineTo(x,y+radius);c.quadraticCurveTo(x,y,x+radius,y);c.closePath();
+    }
+    function captureWholeResult(){
+      const canvas=document.createElement("canvas"),c=canvas.getContext("2d"),W=1200,margin=60,cardW=W-margin*2,gap=28,pad=38;
+      const font=(size,weight)=>String(weight||400)+" "+size+"px Microsoft YaHei, PingFang SC, sans-serif";
+      const split=(value,maxWidth,size,weight)=>{c.font=font(size||24,weight||400);const rows=[];String(value||"").split("\n").forEach(part=>{let line="";for(const char of part){const next=line+char;if(line&&c.measureText(next).width>maxWidth){rows.push(line);line=char}else line=next}if(line)rows.push(line)});return rows.length?rows:[""]};
+      const blockHeight=(value,maxWidth,size,lineHeight,weight)=>split(value,maxWidth,size,weight).length*lineHeight;
+      const common=[...document.querySelectorAll("#commonGround .note")].map(node=>{const title=((node.querySelector("b")||{}).textContent||"").trim();return{title,body:node.textContent.trim().slice(title.length).trim()}});
+      const risks=[{title:"可能的盲点",body:$("#blindspot").textContent.trim()},{title:"风险提醒",body:$("#risk").textContent.trim()},{title:"给你的建议",body:$("#advice").textContent.trim()}];
+      const lines=[...document.querySelectorAll("#lines .note")].map(node=>node.textContent.trim());
+      const portrait=$("#portrait").textContent.trim(),reality=$("#reality").textContent.trim(),quote=$("#resultQuote").textContent.trim();
+      const innerW=cardW-pad*2,colGap=20,colW=(innerW-colGap*2)/3;
+      const portraitH=112+blockHeight(portrait,innerW,25,42,400)+36,dimensionsH=112+DIMS.length*48+34;
+      const commonInnerH=Math.max(...common.map(item=>88+blockHeight(item.body,colW-36,21,36,400)),210),commonH=112+commonInnerH+34;
+      const realityH=112+blockHeight(reality,innerW-36,23,39,400)+70;
+      const riskInnerH=Math.max(...risks.map(item=>88+blockHeight(item.body,colW-36,21,36,400)),220),riskH=112+riskInnerH+34;
+      const linesInnerH=Math.max(...lines.map(value=>54+blockHeight(value,colW-36,22,38,400)),145),linesH=112+linesInnerH+34;
+      const topH=650,totalH=margin+topH+gap+portraitH+gap+dimensionsH+gap+commonH+gap+realityH+gap+riskH+gap+linesH+118;
+      canvas.width=W;canvas.height=Math.ceil(totalH);
+      const round=(x,y,w,h,r,fill,stroke)=>{roundedRectPath(c,x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}};
+      const text=(value,x,y,size,color,weight,align)=>{c.font=font(size,weight);c.fillStyle=color||"#2E3533";c.textAlign=align||"left";c.textBaseline="top";c.fillText(String(value),x,y)};
+      const paragraph=(value,x,y,maxWidth,size,lineHeight,color,weight,align)=>{const rows=split(value,maxWidth,size,weight);rows.forEach((row,index)=>text(row,x,y+index*lineHeight,size,color,weight,align));return y+rows.length*lineHeight};
+      const section=(title,y,h)=>{round(margin,y,cardW,h,28,"#FFFFFF","#DCD4C0");text(title,margin+pad,y+34,29,"#2E3533",900);return y+94};
+      const bg=c.createLinearGradient(0,0,W,totalH);bg.addColorStop(0,"#F9F6EC");bg.addColorStop(.55,"#F6F1E7");bg.addColorStop(1,"#F2EDE2");c.fillStyle=bg;c.fillRect(0,0,W,totalH);
+      let y=margin;round(margin,y,cardW,topH,34,"#FFFFFF","#DCD4C0");
+      text("你的历史人物匹配结果",W/2,y+42,25,"#C29A3E",800,"center");text("🏛️",W/2,y+86,54,"#2E3533",400,"center");
+      const pctGradient=c.createLinearGradient(W/2-120,0,W/2+120,0);pctGradient.addColorStop(0,"#C29A3E");pctGradient.addColorStop(1,"#3F6B5C");c.font=font(92,900);c.fillStyle=pctGradient;c.textAlign="center";c.textBaseline="top";c.fillText($("#matchRate").textContent.trim(),W/2,y+154);
+      text($("#resultName").textContent.trim(),W/2,y+264,56,"#2E3533",900,"center");text($("#resultTitle").textContent.trim(),W/2,y+336,24,"#837F6E",500,"center");
+      const tagValues=[...document.querySelectorAll("#resultTags .tag")].map(node=>node.textContent.trim());c.font=font(21,700);const tagWidths=tagValues.map(value=>c.measureText(value).width+40),tagTotal=tagWidths.reduce((sum,width)=>sum+width,0)+(tagValues.length-1)*12;let tagX=(W-tagTotal)/2;tagValues.forEach((value,index)=>{round(tagX,y+385,tagWidths[index],42,21,"#EFE8D3","#DCD4C0");text(value,tagX+tagWidths[index]/2,y+393,21,"#3F6B5C",700,"center");tagX+=tagWidths[index]+12});
+      const dominant=$("#dominant").textContent.trim();c.font=font(21,700);const dominantW=c.measureText(dominant).width+44;round((W-dominantW)/2,y+447,dominantW,44,22,"#EFE8D3");text(dominant,W/2,y+455,21,"#3F6B5C",700,"center");
+      round(margin+pad,y+515,innerW,104,20,"#FCF9F1","#E4DCC5");text("人物心声",margin+pad+24,y+535,21,"#3F6B5C",800);paragraph(quote,margin+pad+24,y+570,innerW-48,23,36,"#514E42",400);y+=topH+gap;
+      let bodyY=section("01 · 人物自画像",y,portraitH);paragraph(portrait,margin+pad,bodyY,innerW,25,42,"#514E42",400);y+=portraitH+gap;
+      bodyY=section("02 · 八维能力结构",y,dimensionsH);state.result.scores.forEach((score,index)=>{const rowY=bodyY+index*48;text(DIMS[index],margin+pad,rowY+8,22,"#655F51",600);round(margin+pad+132,rowY+14,innerW-220,15,8,"#EFE9D9");const bar=c.createLinearGradient(margin+pad+132,0,margin+cardW-pad-88,0);bar.addColorStop(0,"#C29A3E");bar.addColorStop(1,"#3F6B5C");round(margin+pad+132,rowY+14,(innerW-220)*score/100,15,8,bar);text(score,margin+cardW-pad,rowY+6,23,"#3F6B5C",800,"right")});y+=dimensionsH+gap;
+      bodyY=section("03 · 你与 TA 的共同底色",y,commonH);common.forEach((item,index)=>{const x=margin+pad+index*(colW+colGap);round(x,bodyY,colW,commonInnerH,20,"#FCF9F1","#E4DCC5");text(item.title,x+18,bodyY+24,21,"#2E3533",800);paragraph(item.body,x+18,bodyY+62,colW-36,21,36,"#625C4B",400)});y+=commonH+gap;
+      bodyY=section("04 · 现实中的你",y,realityH);round(margin+pad,bodyY,innerW,realityH-128,20,"#FCF9F1","#E4DCC5");text("现实互动方式",margin+pad+22,bodyY+24,22,"#2E3533",800);paragraph(reality,margin+pad+22,bodyY+64,innerW-44,23,39,"#625C4B",400);y+=realityH+gap;
+      bodyY=section("05 · 性格盲点与风险提醒",y,riskH);risks.forEach((item,index)=>{const x=margin+pad+index*(colW+colGap);round(x,bodyY,colW,riskInnerH,20,"#FCF9F1","#E4DCC5");text(item.title,x+18,bodyY+24,21,"#2E3533",800);paragraph(item.body,x+18,bodyY+62,colW-36,21,36,"#625C4B",400)});y+=riskH+gap;
+      bodyY=section("06 · 你的三句人物台词",y,linesH);lines.forEach((value,index)=>{const x=margin+pad+index*(colW+colGap);round(x,bodyY,colW,linesInnerH,20,"#FCF9F1","#E4DCC5");paragraph(value,x+18,bodyY+28,colW-36,22,38,"#625C4B",400)});y+=linesH;
+      text("历史人物测试 · 趣味性自我探索结果",W/2,y+48,19,"#8D8A79",600,"center");return canvas;
+    }
+    const phoneSaveMode=()=>matchMedia("(max-width:900px)").matches||/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const canShareFile=file=>{try{return typeof navigator.share==="function"&&typeof navigator.canShare==="function"&&navigator.canShare({files:[file]})}catch(error){return false}};
+    let savePreviewUrl="";
+    function closeSaveModal(){const modal=$("#saveModal");modal.classList.add("hidden");$("#savePreview").removeAttribute("src");if(savePreviewUrl){URL.revokeObjectURL(savePreviewUrl);savePreviewUrl=""}}
+    function showSaveModal(blob){closeSaveModal();savePreviewUrl=URL.createObjectURL(blob);$("#savePreview").src=savePreviewUrl;$("#saveModal").classList.remove("hidden");$("#saveModal").scrollTop=0;announce("请长按完整结果图保存到相册")}
+    function downloadOnComputer(blob,fileName){const url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=fileName;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+    function refreshExportLabel(){const button=$("#exportBtn");if(button&&!button.disabled)button.textContent=phoneSaveMode()?"保存到手机相册":"下载完整结果图"}
+    $("#saveModalClose").onclick=closeSaveModal;
+    $("#saveModal").onclick=event=>{if(event.target===$("#saveModal"))closeSaveModal()};
+    $("#exportBtn").onclick=async()=>{if(!state.result){announce("请先完成测试");return}const button=$("#exportBtn"),mobile=phoneSaveMode();button.disabled=true;button.textContent="正在生成…";try{const canvas=captureWholeResult(),blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));if(!blob)throw new Error("empty image");const fileName="历史人物测试-"+state.result.person.name+"-完整结果.png",file=new File([blob],fileName,{type:"image/png"});if(mobile){if(canShareFile(file)){try{await navigator.share({files:[file],title:"保存历史人物测试结果"});announce("已交给系统保存");return}catch(error){if(error&&error.name==="AbortError")return}}showSaveModal(blob);return}downloadOnComputer(blob,fileName);announce("完整结果图已下载")}catch(error){console.error(error);announce("图片生成失败，请刷新后重试")}finally{button.disabled=false;refreshExportLabel()}};
+    refreshExportLabel();window.addEventListener("resize",refreshExportLabel);
+    $("#restartBtn").onclick=()=>{state.gender=null;state.index=0;state.answers=[];state.result=null;document.querySelectorAll(".gender").forEach(x=>x.classList.remove("selected"));$("#prefNext").disabled=true;show(intro);window.scrollTo(0,0)};
+  })();
+  </script>
+</body>
+</html>
