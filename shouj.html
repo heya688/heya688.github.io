@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>收支明细记账本</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0}
+body{max-width:1200px;margin:20px auto;padding:0 16px;background:#f6f8fa}
+h1{text-align:center;color:#24292f;margin-bottom:20px;font-size:22px}
+.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 1px 3px #00000014}
+.form-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin-bottom:12px}
+@media (max-width:640px){.form-row{grid-template-columns:1fr}}
+label{font-weight:500;color:#333}
+input,select,textarea{padding:9px 10px;border:1px solid #d0d7de;border-radius:6px;font-size:15px;width:100%}
+textarea{resize:vertical;min-height:70px}
+.btn-group{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{padding:9px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500}
+.btn-add{background:#238636;color:white}
+.btn-export-csv{background:#0969da;color:white}
+.btn-export-excel-img{background:#1f883d;color:white}
+.btn-backup{background:#8250df;color:white}
+.btn-restore{background:#f5a623;color:white}
+.btn-clear{background:#da3633;color:white}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{border:1px solid #d0d7de;padding:10px;text-align:left}
+th{background:#f6f8fa}
+.income{color:#1f883d;font-weight:500}
+.expense{color:#cf222e;font-weight:500}
+.img-thumb{width:60px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:#000000cc;z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal img{max-width:90%;max-height:90%}
+.modal.show{display:flex}
+.stat{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;font-weight:500}
+</style>
+<!-- ExcelJS + FileSaver （正确支持导出带图片xlsx） -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+<h1>📒 收支明细记账本（带收据图片）</h1>
+
+<div class="card">
+  <div class="form-row">
+    <label>日期</label>
+    <input type="date" id="date">
+  </div>
+  <div class="form-row">
+    <label>收支类型</label>
+    <select id="type">
+      <option value="income">✅ 收入</option>
+      <option value="expense">💸 支出</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label>金额</label>
+    <input type="number" step="0.01" id="amount" placeholder="0.00">
+  </div>
+  <div class="form-row">
+    <label>备注</label>
+    <textarea id="note" placeholder="填写备注说明"></textarea>
+  </div>
+  <div class="form-row">
+    <label>收据图片</label>
+    <input type="file" id="receipt" accept="image/*">
+  </div>
+  <div class="btn-group">
+    <button class="btn-add" onclick="addItem()">➕ 添加记录</button>
+    <button class="btn-export-csv" onclick="exportCSV()">📄 导出纯CSV（无图片）</button>
+    <button class="btn-export-excel-img" onclick="exportNativeXlsx()">📊 导出带图片xlsx【打开直接正常，无需调整】</button>
+    <button class="btn-backup" onclick="exportBackup()">💾 导出备份JSON（含图片）</button>
+    <button class="btn-restore" onclick="document.getElementById('restoreFile').click()">📂 导入备份</button>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreBackup(event)">
+    <button class="btn-clear" onclick="clearAll()">🗑️ 清空全部（谨慎）</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="stat">
+    <div>总收入：<span id="sumIncome" class="income">0.00</span></div>
+    <div>总支出：<span id="sumExpense" class="expense">0.00</span></div>
+    <div>结余：<span id="sumBalance">0.00</span></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>类型</th>
+        <th>金额</th>
+        <th>备注</th>
+        <th>收据</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- 图片预览弹窗 -->
+<div class="modal" id="imgModal" onclick="closeModal()">
+  <img id="modalImg">
+</div>
+
+<script>
+const STORAGE_KEY = "accountBookData";
+let list = [];
+let tempImgBase64 = "";
+
+// 文本转义函数
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// 安全格式化金额
+function fmtMoney(val){
+  const num = Number(val || 0);
+  return num.toFixed(2);
+}
+
+// 初始化
+function init(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved) list = JSON.parse(saved);
+  document.getElementById("date").valueAsDate = new Date();
+  render();
+}
+
+// 图片选择转base64
+document.getElementById("receipt").onchange = async function(e){
+  const file = e.target.files[0];
+  if(!file){tempImgBase64="";return;}
+  tempImgBase64 = await compressImg(file, 1200);
+};
+
+// 图片压缩
+function compressImg(file, maxW){
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      const img = new Image();
+      img.onload = function(){
+        const canvas = document.createElement("canvas");
+        let w = img.width, h = img.height;
+        if(w>maxW){h = h * maxW / w; w = maxW;}
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.7));
+      }
+      img.src = ev.target.result;
+    }
+    reader.readAsDataURL(file);
+  })
+}
+
+// 添加记录
+function addItem(){
+  const date = document.getElementById("date").value;
+  const type = document.getElementById("type").value;
+  const amount = Number(document.getElementById("amount").value||0);
+  const note = document.getElementById("note").value.trim();
+  if(!date || !amount){alert("请填写日期和金额");return;}
+  list.unshift({
+    id: Date.now(),
+    date, type, amount, note,
+    img: tempImgBase64
+  });
+  save();
+  document.getElementById("amount").value="";
+  document.getElementById("note").value="";
+  document.getElementById("receipt").value="";
+  tempImgBase64="";
+  render();
+}
+
+// 保存本地
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+// 渲染表格
+function render(){
+  const tb = document.getElementById("tableBody");
+  tb.innerHTML = "";
+  let sumIncome = 0, sumExpense = 0;
+  list.forEach(item=>{
+    const numAmt = Number(item.amount||0);
+    if(item.type==='income') sumIncome += numAmt;
+    else sumExpense += numAmt;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(item.date)}</td>
+      <td class="${item.type}">${item.type==='income'?'收入':'支出'}</td>
+      <td class="${item.type}">${fmtMoney(numAmt)}</td>
+      <td>${escapeHtml(item.note)}</td>
+      <td>${item.img ? `<img class="img-thumb" src="${item.img}" onclick="openModal('${item.img}')">` : '-'}</td>
+      <td><button onclick="del(${item.id})">删除</button></td>
+    `;
+    tb.appendChild(tr);
+  })
+  document.getElementById("sumIncome").innerText = fmtMoney(sumIncome);
+  document.getElementById("sumExpense").innerText = fmtMoney(sumExpense);
+  document.getElementById("sumBalance").innerText = fmtMoney(sumIncome - sumExpense);
+}
+
+// 删除
+function del(id){
+  if(!confirm("确定删除这条记录？")) return;
+  list = list.filter(x=>x.id!==id);
+  save(); render();
+}
+
+// 预览大图
+function openModal(src){
+  document.getElementById("modalImg").src = src;
+  document.getElementById("imgModal").classList.add("show");
+}
+function closeModal(){
+  document.getElementById("imgModal").classList.remove("show");
+}
+
+// 导出纯CSV（不带图片）
+function exportCSV(){
+  const headers = ["日期","类型","金额","备注"];
+  const rows = list.map(i=>[
+    i.date, i.type==='income'?'收入':'支出', fmtMoney(i.amount), i.note
+  ]);
+  let csv = "\uFEFF"+headers.join(",")+"\n";
+  rows.forEach(r=>csv += r.map(x=>`"${x}"`).join(",")+"\n");
+  download(csv, "收支明细_纯表格.csv", "text/csv");
+}
+
+// ====================== ExcelJS导出标准xlsx，图片锁定单元格，打开直接正常 ======================
+async function exportNativeXlsx(){
+  try{
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet("收支明细");
+
+    // 表头
+    ws.columns = [
+      { header:"日期", key:"date", width:14 },
+      { header:"类型", key:"type", width:8 },
+      { header:"金额", key:"money", width:10 },
+      { header:"备注", key:"note", width:20 },
+      { header:"收据图片", key:"img", width:20 }
+    ];
+    // 设置行高（统一80）
+    ws.getRow(1).height = 30;
+
+    for(let i=0; i<list.length; i++){
+      const item = list[i];
+      const rowIndex = i + 2; // 表头在第1行，数据从第2行开始
+      const row = ws.addRow({
+        date: item.date,
+        type: item.type==='income' ? '收入' : '支出',
+        money: Number(item.amount),
+        note: item.note || "",
+        img: ""
+      })
+      row.height = 80;
+
+      // 有图片，插入到 E列（第5列），锁定跟随单元格
+      if(item.img){
+        const base64 = item.img.split(',')[1];
+        const imgId = workbook.addImage({
+          base64: base64,
+          extension: 'jpeg'
+        })
+        ws.addImage(imgId, {
+          tl: { col:4, row: rowIndex - 1 },
+          br: { col:5, row: rowIndex },
+          editAs: 'oneCell' // 关键！图片跟随单元格移动缩放，不会乱跑叠加
+        })
+      }
+    }
+
+    // 生成并下载
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type:"application/octet-stream"});
+    saveAs(blob, "收支明细_带图片.xlsx");
+    alert("✅ 导出成功！WPS打开图片在对应单元格，无需手动调整！");
+  }catch(e){
+    console.error(e);
+    alert("❌ 导出失败："+e.message+"\n图片太多会很慢，建议少量图片导出");
+  }
+}
+
+// 导出完整备份JSON（带图片base64）
+function exportBackup(){
+  download(JSON.stringify(list,null,2),"收支备份.json","application/json");
+}
+
+// 导入备份
+function restoreBackup(e){
+  const f = e.target.files[0];
+  const r = new FileReader();
+  r.onload = function(ev){
+    try{
+      list = JSON.parse(ev.target.result);
+      save(); render();
+      alert("导入成功！");
+    }catch(err){alert("文件格式错误");}
+  }
+  r.readAsText(f);
+}
+
+// 清空全部
+function clearAll(){
+  if(!confirm("⚠️ 全部删除，无法恢复！是否继续？")) return;
+  list = []; save(); render();
+}
+
+function download(content, name, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+init();
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
