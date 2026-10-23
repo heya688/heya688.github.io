@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的日记记事本（图文混排版）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system}
+body{max-width:700px;margin:16px auto;padding:0 12px;background:#f7f7f7}
+h1{font-size:26px;margin:12px 0;display:flex;align-items:center;gap:6px}
+.tool-bar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+button{padding:10px 18px;border:none;border-radius:8px;background:#409eff;color:#fff;cursor:pointer;font-size:15px;transition:0.2s}
+button:active{opacity:0.85}
+.del-btn{
+  background:#ff5555;
+  padding:4px 10px;
+  font-size:13px;
+}
+.edit-btn{
+  background:#67c23a;
+  padding:4px 10px;
+  font-size:13px;
+  margin-right:6px;
+}
+.save-item-btn{
+  background:#409eff;
+  padding:4px 10px;
+  font-size:13px;
+  margin-right:6px;
+}
+.cancel-edit-btn{
+  background:#909399;
+}
+.btn-warning{
+  background:#e6a23c;
+}
+.btn-danger{
+  background:#f56c6c;
+}
+.btn-sort{
+  background:#9254de;
+}
+.emoji-panel{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:10px;
+  background:#fff;
+  border-radius:10px;
+  margin:8px 0;
+  border:1px solid #eee;
+}
+.emoji-item{
+  font-size:22px;
+  cursor:pointer;
+  padding:4px;
+  border-radius:4px;
+}
+.emoji-item:hover{background:#eef6ff}
+/* 富文本编辑框 */
+.editor{
+  min-height:200px;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #e2e2e2;
+  font-size:16px;
+  margin:10px 0;
+  background:#fff;
+  outline:none;
+}
+.editor img{
+  max-width:100%;
+  border-radius:6px;
+  margin:6px 0;
+}
+.diary-item{background:#fff;padding:16px;border-radius:12px;margin:14px 0;box-shadow:0 1px 6px #00000012;position:relative}
+.diary-item .img-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.diary-item .img-row img{
+  width:140px;
+  border-radius:8px;
+  object-fit:cover;
+  display:block;
+}
+.time{color:#888;font-size:13px;margin-bottom:8px}
+.hidden{display:none}
+.edit-tip{
+  color:#67c23a;
+  font-weight:bold;
+  margin:4px 0;
+}
+#fileImport{
+  display:none;
+}
+#timePicker{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #e2e2e2;
+  font-size:15px;
+  background:#fff;
+}
+.edit-action-bar{
+  display:flex;
+  gap:10px;
+  margin:4px 0 10px 0;
+}
+</style>
+</head>
+<body>
+<h1>我的日记 📖</h1>
+<div class="tool-bar">
+  <button id="btnSort" class="btn-sort">🔃 切换：最早在前</button>
+  <button id="btnExportHtml">📄 导出文件（WPS/Word打开）</button>
+  <button id="btnBackup" class="btn-warning">📦 备份日记</button>
+  <button id="btnImport" class="btn-warning">📥 导入日记</button>
+  <button id="btnClearAll" class="btn-danger">🗑️ 清空全部日记</button>
+  <input type="file" id="fileImport" accept=".json">
+</div>
+
+<input type="datetime-local" id="timePicker">
+
+<div class="emoji-panel" id="emojiPanel">
+  <span class="emoji-item">😀</span><span class="emoji-item">🥰</span><span class="emoji-item">😢</span><span class="emoji-item">😡</span>
+  <span class="emoji-item">🥳</span><span class="emoji-item">😴</span><span class="emoji-item">🤔</span><span class="emoji-item">👍</span>
+  <span class="emoji-item">👋</span><span class="emoji-item">❤️</span><span class="emoji-item">✨</span><span class="emoji-item">☀️</span>
+  <span class="emoji-item">🌙</span><span class="emoji-item">🌸</span><span class="emoji-item">🍀</span><span class="emoji-item">🎂</span>
+  <span class="emoji-item">📖</span><span class="emoji-item">🎵</span><span class="emoji-item">🍜</span><span class="emoji-item">🚶</span>
+</div>
+
+<div id="editTip" class="edit-tip hidden">🖊️ 正在编辑日记</div>
+<div class="edit-action-bar">
+  <button id="btnAddImg">📷 添加配图</button>
+  <button id="btnSave">💾 保存日记</button>
+  <button id="btnCancelEdit" class="hidden cancel-edit-btn">❌ 取消编辑</button>
+</div>
+
+<input class="hidden" type="file" id="imgInput" accept="image/*">
+<!-- 富文本编辑区，支持图文混排 -->
+<div id="editor" class="editor" contenteditable="true"></div>
+
+<div id="listWrap"></div>
+
+<script>
+const imgInput = document.querySelector('#imgInput');
+const editor = document.querySelector('#editor');
+const btnAddImg = document.querySelector('#btnAddImg');
+const btnSave = document.querySelector('#btnSave');
+const btnCancelEdit = document.querySelector('#btnCancelEdit');
+const btnSort = document.querySelector('#btnSort');
+const btnExportHtml = document.querySelector('#btnExportHtml');
+const btnBackup = document.querySelector('#btnBackup');
+const btnImport = document.querySelector('#btnImport');
+const btnClearAll = document.querySelector('#btnClearAll');
+const fileImport = document.querySelector('#fileImport');
+const listWrap = document.querySelector('#listWrap');
+const emojiItems = document.querySelectorAll('.emoji-item');
+const editTip = document.querySelector('#editTip');
+const timePicker = document.querySelector('#timePicker');
+
+let editIndex = null;
+let sortNewFirst = true;
+
+// 在光标位置插入html（图片、表情都靠这个）
+function insertHtmlAtCaret(html) {
+  let sel, range;
+  if (window.getSelection) {
+    sel = window.getSelection();
+    if (sel.rangeCount) {
+      range = sel.getRangeAt(0);
+      range.deleteContents();
+      const el = document.createElement('div');
+      el.innerHTML = html;
+      const frag = document.createDocumentFragment();
+      let lastNode;
+      while (el.firstChild) {
+        lastNode = frag.appendChild(el.firstChild);
+      }
+      range.insertNode(frag);
+      if (lastNode) {
+        range = range.cloneRange();
+        range.setStartAfter(lastNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }
+}
+
+function formatDateTimeLocal(d){
+  const year = d.getFullYear();
+  const month = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${year}-${month}-${day}T${hh}:${mm}`;
+}
+timePicker.value = formatDateTimeLocal(new Date());
+
+// 表情插入光标处
+emojiItems.forEach(el=>{
+  el.onclick = ()=>{
+    const emoji = el.innerText;
+    insertHtmlAtCaret(emoji);
+    editor.focus();
+  }
+})
+
+btnAddImg.onclick = function(){
+  imgInput.click();
+};
+
+// 图片压缩
+function compressImage(file, maxW=1200, quality=0.7){
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        if(w>maxW){
+          h = h * maxW / w;
+          w = maxW;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      }
+      img.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  })
+}
+
+imgInput.onchange = async function(e){
+  const files = Array.from(e.target.files);
+  if(files.length === 0) return;
+  editor.focus();
+  for(const file of files){
+    const base64 = await compressImage(file);
+    insertHtmlAtCaret(`<img src="${base64}" style="max-width:100%;border-radius:6px;margin:6px 0;">`);
+  }
+  imgInput.value = '';
+}
+
+btnSort.onclick = function(){
+  sortNewFirst = !sortNewFirst;
+  btnSort.innerText = sortNewFirst ? "🔃 切换：最早在前" : "🔃 切换：最新在前";
+  renderList();
+}
+
+// 保存日记
+btnSave.onclick = function(){
+  const html = editor.innerHTML.trim();
+  if(!html){
+    alert("请输入日记内容！");
+    return;
+  }
+  if(!timePicker.value){
+    alert("请选择日期时间");
+    return;
+  }
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  if(editIndex !== null){
+    diaryList[editIndex].html = html;
+    diaryList[editIndex].time = new Date(timePicker.value).toLocaleString();
+    alert("修改成功！");
+  }else{
+    diaryList.unshift({
+      time:new Date(timePicker.value).toLocaleString(),
+      html: html
+    });
+    alert("保存成功！")
+  }
+  localStorage.setItem("myDiary", JSON.stringify(diaryList));
+  clearEditState();
+  renderList();
+}
+
+window.saveCurrentDiary = function(index){
+  const html = editor.innerHTML.trim();
+  if(!html){
+    alert("请输入日记内容！");
+    return;
+  }
+  if(!timePicker.value){
+    alert("请选择日期时间");
+    return;
+  }
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  if(editIndex !== null && editIndex === index){
+    diaryList[editIndex].html = html;
+    diaryList[editIndex].time = new Date(timePicker.value).toLocaleString();
+    alert("修改成功！");
+    localStorage.setItem("myDiary", JSON.stringify(diaryList));
+    clearEditState();
+    renderList();
+  }else{
+    alert("请先点这条日记的【编辑】再修改保存！");
+  }
+}
+
+btnCancelEdit.onclick = clearEditState;
+function clearEditState(){
+  editIndex = null;
+  editor.innerHTML = "";
+  editTip.classList.add("hidden");
+  btnCancelEdit.classList.add("hidden");
+  timePicker.value = formatDateTimeLocal(new Date());
+}
+
+window.editDiary = function(index){
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  const item = diaryList[index];
+  editIndex = index;
+  editor.innerHTML = item.html || "";
+  const d = new Date(item.time);
+  timePicker.value = formatDateTimeLocal(d);
+  editTip.classList.remove("hidden");
+  btnCancelEdit.classList.remove("hidden");
+  editor.focus();
+  window.scrollTo({top:0,behavior:'smooth'})
+}
+
+window.deleteDiary = function(index){
+  if(!confirm("确定要删除这条日记吗？")) return;
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  diaryList.splice(index,1);
+  localStorage.setItem("myDiary", JSON.stringify(diaryList));
+  if(editIndex === index) clearEditState();
+  renderList();
+}
+
+function renderList(){
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  listWrap.innerHTML = "";
+  if(diaryList.length===0){
+    listWrap.innerHTML = "<p style='text-align:center;color:#777;margin-top:30px'>暂无日记，开始记录吧 ✍️</p>";
+    return;
+  }
+  let showList = [...diaryList];
+  showList.sort((a,b)=>{
+    const tA = new Date(a.time).getTime();
+    const tB = new Date(b.time).getTime();
+    return sortNewFirst ? tB - tA : tA - tB;
+  });
+
+  showList.forEach((item, index)=>{
+    const realIndex = diaryList.findIndex(x=>x.time === item.time && x.html === item.html);
+    const div = document.createElement("div");
+    div.className="diary-item";
+    div.innerHTML = `
+      <div style="text-align:right;margin-bottom:6px">
+        <button class="save-item-btn" onclick="saveCurrentDiary(${realIndex})">💾 保存</button>
+        <button class="edit-btn" onclick="editDiary(${realIndex})">编辑</button>
+        <button class="del-btn" onclick="deleteDiary(${realIndex})">删除</button>
+      </div>
+      <div class="time">${item.time}</div>
+      <div>${item.html}</div>
+    `;
+    listWrap.appendChild(div);
+  })
+}
+
+// 导出
+btnExportHtml.onclick = function(){
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  if(diaryList.length === 0){
+    alert("没有日记！");
+    return;
+  }
+  let showList = [...diaryList];
+  showList.sort((a,b)=>{
+    const tA = new Date(a.time).getTime();
+    const tB = new Date(b.time).getTime();
+    return sortNewFirst ? tB - tA : tA - tB;
+  });
+  let html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>我的日记</title>
+<style>
+body{max-width:700px;margin:20px auto;font-size:16px}
+.item{border-bottom:1px solid #ccc;padding:16px 0}
+.time{color:#666;font-size:13px}
+img{max-width:100%;border-radius:6px;margin:6px 0;}
+</style>
+</head>
+<body>
+<h1>我的日记</h1>
+`;
+  showList.forEach(d=>{
+    html += `<div class="item">
+<div class="time">📅 ${d.time}</div>
+<div>${d.html}</div>
+</div>`;
+  })
+  html += "</body></html>";
+  const blob = new Blob([html],{type:"text/html;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "我的日记.html";
+  a.click();
+}
+
+btnBackup.onclick = function(){
+  const diaryList = JSON.parse(localStorage.getItem("myDiary") || "[]");
+  const str = JSON.stringify(diaryList,null,2);
+  const blob = new Blob([str],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "日记备份.json";
+  a.click();
+  alert("备份完成！请保存好这个json文件");
+}
+
+btnImport.onclick = function(){
+  fileImport.click();
+}
+fileImport.onchange = function(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const data = JSON.parse(reader.result);
+      if(!Array.isArray(data)){
+        alert("文件格式不对！");
+        return;
+      }
+      if(!confirm("导入会覆盖当前全部日记，确定继续吗？")) return;
+      localStorage.setItem("myDiary", JSON.stringify(data));
+      renderList();
+      alert("导入成功！");
+    }catch(err){
+      alert("导入失败，不是有效的备份文件！");
+    }
+  }
+  reader.readAsText(f);
+}
+
+btnClearAll.onclick = function(){
+  if(!confirm("⚠️ 警告：该操作会删除所有日记，无法恢复！是否继续？")) return;
+  if(!confirm("再确认一次！真的要清空全部日记吗？")) return;
+  localStorage.removeItem("myDiary");
+  clearEditState();
+  renderList();
+  alert("已清空全部日记");
+}
+
+window.onload = renderList;
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
